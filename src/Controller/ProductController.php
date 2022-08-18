@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\Product;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -9,11 +11,20 @@ use Symfony\Component\Routing\Annotation\Route;
 class ProductController extends AbstractController
 {
     #[Route('/product')]
-    public function create(): Response
+    public function create(ManagerRegistry $doctrine): Response
     {
-        return new Response(
-            '<html><body>create</body></html>'
-        );
+        $entityManager = $doctrine->getManager();
+
+        $product = new Product();
+        $product->setDescription('Mouse')
+            ->setBrand('Microsoft')
+            ->setCategory('informatica')
+            ->setPrice(24.00);
+
+        $entityManager->persist($product);
+        $entityManager->flush();
+
+        return new Response('Saved new product with id ' . $product->getId());
     }
 
     #[Route('/product/show')]
