@@ -8,23 +8,27 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\Serializer;
-
-use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ProductController extends AbstractController
 {
     #[Route('/product')]
-    public function create(ManagerRegistry $doctrine): Response
+    public function create(ManagerRegistry $doctrine, ValidatorInterface $validator): Response
     {
         $entityManager = $doctrine->getManager();
-
         $product = new Product();
-        $product->setDescription('Mouse')
+        $product->setDescription('')
             ->setBrand('Microsoft')
             ->setCategory('informatica')
             ->setPrice(24.00);
+
+        $errors = $validator->validate($product);
+
+        if ($errors) {
+            $errorsString = (string) $errors;
+            return new Response($errorsString);
+        }
 
         $entityManager->persist($product);
         $entityManager->flush();
@@ -57,10 +61,14 @@ class ProductController extends AbstractController
     }
 
     #[Route('/product/list', 'GET')]
-    public function list(ManagerRegistry $doctrine, SerializerInterface $serializer): Response
+    public function list(ManagerRegistry $doctrine, NormalizerInterface $normalizer): Response
     {
         $products = $doctrine->getRepository(Product::class)->findAll();
-        $data = $serializer->serialize($products, 'json');
+        $data = $normalizer->normalize(
+            $products,
+            null,
+            ['groups' => ['group1']]
+        );
 
         return new JsonResponse($data, 200);
     }

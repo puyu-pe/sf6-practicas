@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\ProductRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 class Product
@@ -17,6 +18,7 @@ class Product
 
     #[ORM\Column(length: 255)]
     #[Groups(['group1'])]
+    #[Assert\NotBlank]
     private ?string $description = null;
 
     #[ORM\Column(length: 100)]
