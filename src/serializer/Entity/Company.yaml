@@ -1,0 +1,10 @@
+App\Entity\Company:
+   attributes:
+      id:
+         groups: [ 'group_1', 'group_2' ]
+      description:
+         groups: [ 'group_1' ]
+      ruc:
+         groups: [ 'group_1' ]
+      status:
+         groups: [ 'group_1', 'group_2' ]

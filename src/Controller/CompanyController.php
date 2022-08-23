@@ -5,8 +5,12 @@ namespace App\Controller;
 use App\Entity\Company;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Normalizer\NormalizableInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class CompanyController extends AbstractController
 {
@@ -29,35 +33,52 @@ class CompanyController extends AbstractController
         return new Response('Saved new company with id ' . $company->getId());
     }
 
-    #[Route('/company/show')]
-    public function show(): Response
+    #[Route('/company/update/{id}')]
+    public function update(ManagerRegistry $doctrine, int $id ): Response
     {
-        return new Response(
-            '<html><body> SHOW COMPANY </body></html>'
-        );
+        $entityManager = $doctrine->getManager();
+        $company = $entityManager->getRepository(Company::class)->find($id);
+
+        if (!$company) {
+            throw $this->createNotFoundException(
+                'No se encontro la empresa con el ID: '.$id
+            );
+        }
+
+        $company->setDescription('Company EDIT');
+        $entityManager->flush();
+
+        return new Response('Descripcion de la compania actualizado ' . $company->getId());
     }
 
-    #[Route('/company/update')]
-    public function update(): Response
+    #[Route('/company/delete/{id}')]
+    public function delete(ManagerRegistry $doctrine, int $id ): Response
     {
-        return new Response(
-            '<html><body> UPDATE COMPANY </body></html>'
-        );
-    }
+        $entityManager = $doctrine->getManager();
+        $company = $entityManager->getRepository(Company::class)->find($id);
 
-    #[Route('/company/delete')]
-    public function delete(): Response
-    {
-        return new Response(
-            '<html><body> DELETE COMPANY </body></html>'
-        );
+        if (!$company) {
+            throw $this->createNotFoundException(
+                'No se encontro la empresa con el ID: '.$id
+            );
+        }
+
+        $entityManager->remove($company);
+        $entityManager->flush();
+
+        return new Response('Compania eliminada' . $company->getId());
     }
 
     #[Route('/company/list')]
-    public function list(): Response
+    public function list(ManagerRegistry $doctrine, NormalizerInterface $normalizer ): Response
     {
-        return new Response(
-            '<html><body> LIST COMPANY </body></html>'
-        );
+        $companys = $doctrine->getRepository(Company::class)->findAll();
+        $data = $normalizer->normalize(
+            $companys,
+            null,
+            ['groups' => ['group_1']]
+        );;
+
+        return new JsonResponse($data, 200);
     }
 }

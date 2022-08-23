@@ -18,9 +18,8 @@ framework:
         log: true
 
     serializer:
-        enabled: true
-        mapping:
-            paths: ['%kernel.project_dir%/src/serializer']
+        default_context:
+            enable_max_depth: true
 
 when@test:
     framework:
