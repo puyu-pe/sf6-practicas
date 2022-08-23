@@ -1,10 +1,12 @@
 App\Entity\Product:
    attributes:
       id:
-         groups: [ 'product' ]
+         groups: [ 'group1', 'group2' ]
       description:
-         groups: [ 'product' ]
+         groups: [ 'group1', 'group2']
       brand:
-         groups: [ 'product' ]
+         groups: [ 'group1' ]
       category:
-         groups: [ 'product' ]
+         groups: [ 'group1' ]
+      price:
+         groups: [ 'group2' ]
