@@ -3,17 +3,41 @@
 namespace App\Controller;
 
 use App\Entity\Product;
+use App\Repository\ProductRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use FOS\RestBundle\Controller\AbstractFOSRestController;
+use http\Client\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use FOS\RestBundle\Controller\Annotations as Rest;
 
-class ProductController extends AbstractController
+class ProductController extends AbstractFOSRestController/*AbstractController*/
 {
     #[Route('/product')]
+    #[Rest\Get(path: '/api/products')]
+    #[Rest\View(serializerGroups: ['group2'])]
+    public function getAction (
+        ProductRepository $productRepository
+    ): Array
+    {
+        $products = $productRepository->findAll();
+        return $products;
+    }
+
+    #[Rest\Post(path: '/api/products')]
+    #[Rest\View(serializerGroups: ['group1'])]
+    public function postAction (
+        Request $request
+    ): array
+    {
+        var_dump($request->getContent());
+        return [];
+    }
+    /*
     public function create(ManagerRegistry $doctrine, ValidatorInterface $validator): Response
     {
         $entityManager = $doctrine->getManager();
@@ -34,7 +58,7 @@ class ProductController extends AbstractController
         $entityManager->flush();
 
         return new Response('Saved new product with id ' . $product->getId());
-    }
+    }*/
 
     #[Route('/product/show')]
     public function show(): Response
