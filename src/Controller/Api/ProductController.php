@@ -7,12 +7,15 @@ use App\Form\Model\Product\ProductDto;
 use App\Form\Type\Product\ProductType;
 use App\Repository\ProductRepository;
 use App\Service\FileUploader;
+use App\Service\ProductFormProcessor;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
+use FOS\RestBundle\View\View;
 use League\Flysystem\FilesystemOperator;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class ProductController extends AbstractFOSRestController
 {
@@ -29,33 +32,13 @@ class ProductController extends AbstractFOSRestController
     #[Rest\View(serializerGroups: ['group1'])]
     public function postAction(
         Request                $request,
-        EntityManagerInterface $entityManager,
-        FileUploader $fileUploader
+        ProductFormProcessor $productFormProcessor
     )
     {
-        $productDto = new ProductDto();
-        $form = $this->createForm(ProductType::class, $productDto);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-
-            $product = new Product();
-            $product->setDescription($productDto->getDescription());
-            $product->setBrand($productDto->getBrand());
-            $product->setPrice($productDto->getPrice());
-            $product->setCategory($productDto->getCategory());
-
-            if ($productDto->getImageBase64()) {
-                $filename = $fileUploader->uploadBase64File($productDto->getImageBase64());
-                $product->setImage($filename);
-            }
-
-            $entityManager->persist($product);
-            $entityManager->flush();
-            return $product;
-        }
-
-        return $form;
+        [$product, $error] = ($productFormProcessor)($request);
+        $statusCode = $product ? Response::HTTP_CREATED : Response::HTTP_BAD_REQUEST;
+        $data = $product ?? $error;
+        return View::create($data, $statusCode);
     }
 
     #[Rest\Delete(path: '/products/{id}', requirements: ['id' => '\d+'])]
