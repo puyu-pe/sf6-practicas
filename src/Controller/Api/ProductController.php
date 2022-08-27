@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class ProductController extends AbstractFOSRestController
 {
-    #[Rest\Get(path: '/api/products')]
+    #[Rest\Get(path: '/products')]
     #[Rest\View(serializerGroups: ['group2'])]
     public function getAction(
         ProductRepository $productRepository
@@ -25,7 +25,7 @@ class ProductController extends AbstractFOSRestController
         return $productRepository->findAll();
     }
 
-    #[Rest\Post(path: '/api/products')]
+    #[Rest\Post(path: '/products')]
     #[Rest\View(serializerGroups: ['group1'])]
     public function postAction(
         Request                $request,
@@ -45,7 +45,7 @@ class ProductController extends AbstractFOSRestController
         return $form;
     }
 
-    #[Rest\Delete(path: '/api/products/{id}', requirements: ['id' => '\d+'])]
+    #[Rest\Delete(path: '/products/{id}', requirements: ['id' => '\d+'])]
     public function deleteAction(
         int                    $id,
         ProductRepository      $productRepository,
