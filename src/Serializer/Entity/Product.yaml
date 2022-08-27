@@ -11,4 +11,4 @@ App\Entity\Product:
       price:
          groups: [ 'group2' ]
       image:
-         groups: [ 'group1' ]
+         groups: [ 'group1', 'group2' ]
