@@ -1,0 +1,11 @@
+App\Entity\Customer:
+   attributes:
+      id:
+         groups: [ 'group1', 'group2' ]
+      Name:
+         groups: [ 'group1', 'group2']
+      Lastname:
+         groups: [ 'group1' ]
+      Address:
+         groups: [ 'group1' ]
+
