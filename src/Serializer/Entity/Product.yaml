@@ -10,3 +10,5 @@ App\Entity\Product:
          groups: [ 'group1' ]
       price:
          groups: [ 'group2' ]
+      image:
+         groups: [ 'group1' ]

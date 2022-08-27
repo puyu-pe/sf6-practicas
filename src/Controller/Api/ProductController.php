@@ -3,20 +3,19 @@
 namespace App\Controller\Api;
 
 use App\Entity\Product;
-use App\Form\Type\ProductType;
+use App\Form\Model\Product\ProductDto;
+use App\Form\Type\Product\ProductType;
 use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Persistence\ManagerRegistry;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
-use mysql_xdevapi\Exception;
-use Symfony\Component\Form\FormInterface;
+use League\Flysystem\FilesystemOperator;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
 class ProductController extends AbstractFOSRestController
 {
-    #[Rest\Get(path: '/api/products')]
+    #[Rest\Get(path: '/products')]
     #[Rest\View(serializerGroups: ['group2'])]
     public function getAction(
         ProductRepository $productRepository
@@ -25,18 +24,33 @@ class ProductController extends AbstractFOSRestController
         return $productRepository->findAll();
     }
 
-    #[Rest\Post(path: '/api/products')]
+    #[Rest\Post(path: '/products')]
     #[Rest\View(serializerGroups: ['group1'])]
     public function postAction(
         Request                $request,
-        EntityManagerInterface $entityManager
-    ): Product|FormInterface
+        EntityManagerInterface $entityManager,
+        FilesystemOperator $defaultStorage
+    )
     {
-        $product = new Product();
-        $form = $this->createForm(ProductType::class, $product);
+        $productDto = new ProductDto();
+        $form = $this->createForm(ProductType::class, $productDto);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $product = new Product();
+            $product->setDescription($productDto->getDescription());
+            $product->setBrand($productDto->getBrand());
+            $product->setPrice($productDto->getPrice());
+            $product->setCategory($productDto->getCategory());
+
+            if ($productDto->getImageBase64()) {
+                $extension = explode('/', mime_content_type($productDto->getImageBase64()))[1];
+                $data = explode(',', $productDto->getImageBase64());
+                $filename = sprintf('%s.%s', uniqid('book_', true), $extension);
+                $defaultStorage->write($filename, base64_decode($data[1]));
+                $product->setImage($filename);
+            }
+
             $entityManager->persist($product);
             $entityManager->flush();
             return $product;
@@ -45,7 +59,7 @@ class ProductController extends AbstractFOSRestController
         return $form;
     }
 
-    #[Rest\Delete(path: '/api/products/{id}', requirements: ['id' => '\d+'])]
+    #[Rest\Delete(path: '/products/{id}', requirements: ['id' => '\d+'])]
     public function deleteAction(
         int                    $id,
         ProductRepository      $productRepository,

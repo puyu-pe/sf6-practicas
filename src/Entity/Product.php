@@ -15,7 +15,6 @@ class Product
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank]
     private ?string $description = null;
 
     #[ORM\Column(length: 100)]
@@ -26,6 +25,9 @@ class Product
 
     #[ORM\Column]
     private ?float $price = null;
+
+    #[ORM\Column]
+    private ?string $image = null;
 
     public function getId(): ?int
     {
@@ -75,6 +77,18 @@ class Product
     public function setCategory(string $category): self
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(string $image): self
+    {
+        $this->image = $image;
 
         return $this;
     }
