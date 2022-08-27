@@ -15,7 +15,7 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use FOS\RestBundle\Controller\Annotations as Rest;
 
-class ProductController extends AbstractFOSRestController/*AbstractController*/
+class ProductController extends AbstractFOSRestController
 {
     #[Route('/product')]
     #[Rest\Get(path: '/api/products')]
