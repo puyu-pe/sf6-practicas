@@ -6,6 +6,7 @@ use App\Entity\Product;
 use App\Form\Model\Product\ProductDto;
 use App\Form\Type\Product\ProductType;
 use App\Repository\ProductRepository;
+use App\Service\FileUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
@@ -29,7 +30,7 @@ class ProductController extends AbstractFOSRestController
     public function postAction(
         Request                $request,
         EntityManagerInterface $entityManager,
-        FilesystemOperator $defaultStorage
+        FileUploader $fileUploader
     )
     {
         $productDto = new ProductDto();
@@ -37,6 +38,7 @@ class ProductController extends AbstractFOSRestController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
             $product = new Product();
             $product->setDescription($productDto->getDescription());
             $product->setBrand($productDto->getBrand());
@@ -44,10 +46,7 @@ class ProductController extends AbstractFOSRestController
             $product->setCategory($productDto->getCategory());
 
             if ($productDto->getImageBase64()) {
-                $extension = explode('/', mime_content_type($productDto->getImageBase64()))[1];
-                $data = explode(',', $productDto->getImageBase64());
-                $filename = sprintf('%s.%s', uniqid('book_', true), $extension);
-                $defaultStorage->write($filename, base64_decode($data[1]));
+                $filename = $fileUploader->uploadBase64File($productDto->getImageBase64());
                 $product->setImage($filename);
             }
 
