@@ -1,21 +1,19 @@
 <?php
 
 namespace App\Controller\Api;
-use App\Entity\Customer;
-use App\Form\Type\CustomerType;
 use App\Repository\CustomerRepository;
+use App\Service\CustomerFormProcessor;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Persistence\ManagerRegistry;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
-use mysql_xdevapi\Exception;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use FOS\RestBundle\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class CustomerController extends AbstractFOSRestController
 {
-    #[Rest\Get(path: '/api/customer')]
+    #[Rest\Get(path: '/customer')]
     #[Rest\View(serializerGroups: ['group1'])]
     public function getAction(
         CustomerRepository $customerRepository
@@ -24,27 +22,21 @@ class CustomerController extends AbstractFOSRestController
         return $customerRepository->findAll();
     }
 
-    #[Rest\Post(path: '/api/customer')]
+    #[Rest\Post(path: '/customer')]
     #[Rest\View(serializerGroups: ['group1'])]
     public function postAction(
         Request                $request,
-        EntityManagerInterface $entityManager
-    ): Customer|FormInterface
+        CustomerFormProcessor   $customerFormProcessor
+    )
     {
-        $customer = new Customer();
-        $form = $this->createForm(CustomerType::class, $customer);
-        $form->handleRequest($request);
+        [$customer,$error] = ($customerFormProcessor)($request);
+        $statusCode = $customer ? Response::HTTP_CREATED : Response::HTTP_BAD_REQUEST;
+        $data =  $customer ?? $error;
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($customer);
-            $entityManager->flush();
-            return $customer;
-        }
-
-        return $form;
+        return View::create($data,$statusCode);
     }
 
-    #[Rest\Delete(path: '/api/customer/{id}', requirements: ['id' => '\d+'])]
+    #[Rest\Delete(path: '/customer/{id}', requirements: ['id' => '\d+'])]
     public function deleteAction(
         int                    $id,
         CustomerRepository      $customerRepository,

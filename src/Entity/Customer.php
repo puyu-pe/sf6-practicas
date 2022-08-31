@@ -23,9 +23,6 @@ class Customer
     #[ORM\Column(length: 200)]
     private ?string $Address = null;
 
-    #[ORM\Column(length: 1000)]
-    private ?string $Image = null;
-
     public function getId(): ?int
     {
         return $this->id;
